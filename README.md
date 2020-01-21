@@ -1,6 +1,6 @@
 # React Native : Service Provider OAuth2 
 
-This library permits to set OAuth2 API config at app entry point (& signin) and apply and user transparent worfklow (access_token by refresh_token -> credentials).
+This library permits to set OAuth2 API config at app entry point (& signin) and apply and user transparent worfklow (access_token by refresh_token -> by credentials).
 
 ## Installation
 ```sh
