@@ -14,7 +14,7 @@ ServiceProvider.setOAuth2Data(GET_ACCESS_TOKEN_URL, CLIENT_ID, CLIENT_SECRET)
 #### Set OAuth2 logout callback : method call if all trannsparent workflow fail
 ServiceProvider.setOAuth2LogoutCallback(CALLBACK_METHOD)
 
-#### Set OAuth2 save tokens method : method to save tokens on local device (persistant data) when GET_ACCESS_TOKEN_URL return success
+#### Set OAuth2 save tokens method : method to save tokens on local device (persistant data) when GET_ACCESS_TOKEN_URL() call returns success
 ServiceProvider.setSaveTokensMethod(SAVE_LOCAL_TOKENS_METHOD)
 
 ## User transparent auth workflow specifics
