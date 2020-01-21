@@ -28,4 +28,4 @@ ServiceProvider.setSaveTokensMethod(SAVE_LOCAL_TOKENS_METHOD)
 ## User transparent auth workflow specifics
 ##### Check detailed comments in "ServiceProviderOAuth2.js"
 ###### Transparent User Worfklow to apply app side
-[![N|Solid](https://github.com/razzium/react_native_service_provider_oauth2/blob/master/react_native_service_provider_oauth2.png?raw=true)
+![N|Solid](https://github.com/razzium/react_native_service_provider_oauth2/blob/master/react_native_service_provider_oauth2.png?raw=true)
