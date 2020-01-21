@@ -1,0 +1,27 @@
+{
+  "name": "react_native_service_provider_oauth2",
+  "version": "1.0.0",
+  "description": "This library permits to set OAuth2 API config at app entry point (& signin) and apply and user transparent worfklow (access_token by refresh_token -> by credentials).",
+  "main": "ServiceProviderOAuth2.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/razzium/react_native_service_provider_oauth2.git"
+  },
+  "keywords": [
+    "react",
+    "native",
+    "oauth",
+    "oauth2",
+    "service",
+    "provider"
+  ],
+  "author": "RaZZiuM",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/razzium/react_native_service_provider_oauth2/issues"
+  },
+  "homepage": "https://github.com/razzium/react_native_service_provider_oauth2#readme"
+}
