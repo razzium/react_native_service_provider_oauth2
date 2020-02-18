@@ -391,6 +391,61 @@ function deleteOAuth2UserData() {
 }
 
 /**
+ * This method will make a PUT request
+ * @param putData PUT data to send
+ * @param url Endpoint's URL
+ * @param callbackRequestSuccess Url to call if request is success
+ * @param callbackRequestError Url to call if request fails
+ * @param addTokenInHeaders Boolean to set if lib have to add access_token in Bearer (false by default)
+ */
+function putRequest(putData, url, callbackRequestSuccess, callbackRequestError, addTokenInHeaders = false) {
+
+    if  (url !== undefined && url !== null) {
+
+        // Set headers
+        let headers = {};
+
+        // If OAuth2 active and token is needed -> manage Bearer
+        if (IS_OAUTH2 && addTokenInHeaders) {
+
+            if  (OAUTH2_ACCESS_TOKEN !== undefined && OAUTH2_ACCESS_TOKEN !== null) {
+
+                const OAuth2AccessToken = 'Bearer '.concat(OAUTH2_ACCESS_TOKEN);
+                headers = { Authorization: OAuth2AccessToken }
+                OAUTH2_ACCESS_TOKEN = null;
+
+            }
+
+        }
+
+        axios.put(url, putData, {
+            headers: headers
+        })
+            .then(function (response) {
+
+                // If OAuth2 active -> delete original request
+                if (IS_OAUTH2) {
+                    OAUTH2_TMP_ORIG_REQ = null;
+                }
+
+                callbackRequestSuccess(putData, response)
+
+            })
+            .catch(function (error) {
+
+                console.log(error);
+                // If callback is not null -> call it
+                if (callbackRequestError !== null) {
+                    callbackRequestError(putData, error);
+                }
+
+            });
+
+    }
+
+}
+
+/**
  *
  * ////////////////////// OAuth2 config methods START (public methods) //////////////////////
  *
@@ -529,6 +584,7 @@ async function getAccessTokenByCredentials() {
 export default {
     getRequest,
     postRequest,
+    putRequest,
     setOAuth2Data,
     setOAuth2AccessToken,
     setOAuth2LogoutCallback,
