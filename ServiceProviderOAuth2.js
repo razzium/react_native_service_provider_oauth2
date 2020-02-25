@@ -58,6 +58,8 @@ axios.interceptors.response.use(
 
             if (status === 401) {
 
+                OAUTH2_ACCESS_TOKEN = null
+
                 // Check if from refreshToken -> then call access_token by refresh_token
                 if (OAUTH2_REFRESH_TOKEN !== null) {
 
@@ -169,7 +171,6 @@ function getRequest(url, callbackRequestSuccess, callbackRequestError, addTokenI
 
                 const OAuth2AccessToken = 'Bearer '.concat(OAUTH2_ACCESS_TOKEN);
                 headers = { Authorization: OAuth2AccessToken }
-                OAUTH2_ACCESS_TOKEN = null;
 
             }
 
@@ -212,7 +213,7 @@ function getRequest(url, callbackRequestSuccess, callbackRequestError, addTokenI
  * @param callbackRequestError Url to call if request fails
  * @param addTokenInHeaders Boolean to set if lib have to add access_token in Bearer (false by default)
  */
-function postRequest(postData, url, callbackRequestSuccess, callbackRequestError, addTokenInHeaders = false) {
+function postRequest(postData, url, callbackRequestSuccess, callbackRequestError, addTokenInHeaders = false, hasToStringify = true) {
 
     if  (url !== undefined && url !== null) {
 
@@ -226,13 +227,14 @@ function postRequest(postData, url, callbackRequestSuccess, callbackRequestError
 
                 const OAuth2AccessToken = 'Bearer '.concat(OAUTH2_ACCESS_TOKEN);
                 headers = { Authorization: OAuth2AccessToken }
-                OAUTH2_ACCESS_TOKEN = null;
 
             }
 
         }
 
-        axios.post(url, qs.stringify(postData), {
+        let finalPostData = hasToStringify ? qs.stringify(postData) : postData
+
+        axios.post(url, finalPostData, {
             headers: headers
         })
             .then(function (response) {
@@ -412,7 +414,6 @@ function putRequest(putData, url, callbackRequestSuccess, callbackRequestError, 
 
                 const OAuth2AccessToken = 'Bearer '.concat(OAUTH2_ACCESS_TOKEN);
                 headers = { Authorization: OAuth2AccessToken }
-                OAUTH2_ACCESS_TOKEN = null;
 
             }
 
