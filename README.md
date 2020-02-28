@@ -3,7 +3,7 @@
 This library permits to set OAuth2 API config at app entry point (signin) and apply an user transparent worfklow to manage user tokens/credentials on Webservice/API calls.
 
 ## Features
-* Signin : save credentials (optional : but Transparent user workflow not firing) then set OAuth2 workflow -> all POST / GET / PUT / DELETE request will pass Bearer with access_token on calling url (if exists, if not -> fire transparent user workflow)
+* Signin (optional : but Transparent user workflow not firing): save credentials then set OAuth2 workflow -> all POST / GET / PUT / DELETE request will pass Bearer with access_token on calling url (if exists, if not -> fire transparent user workflow)
 * Transparent user workflow (optional : a Webservice/API call can be done without access_token so Transparent user workflow not firing) : 
 if Webservice/API authentication method fails with 401, automatically calls GET access_token url by refresh_token (if exists)
 * * If fails : automatically call GET access_token url by credentials (if exists)
