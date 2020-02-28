@@ -1,6 +1,9 @@
 # React Native : Axios Service Provider OAuth2 
 
-This library permits to set OAuth2 API config at app entry point (signin) and apply an user transparent worfklow :(if accessToken call fails > access_token by refresh_token (if fails > access_token by credentials).
+This library permits to set OAuth2 API config at app entry point (signin) and apply an user transparent worfklow to manage user tokens/credentials on Webservice API call.
+
+
+(if accessToken call fails > access_token by refresh_token (if fails > access_token by credentials).
 
 ## Features
 * Signin : save credentials (by passed method) then set OAuth2 workflow -> all POST and GET request will pass Bearer with access_token on calling url (if exists, if not -> fire transparent user workflow)
