@@ -1,7 +1,7 @@
 // TODO : get params
 
 /**
- * ////////////////////// Libs
+ * ////////////////////// Libs // todo -> Readme || auto import || both ?!Tiens moi un peu au jus
  */
 const axios = require('axios'); // https://github.com/axios/axios
 const qs = require('qs'); // https://github.com/ljharb/qs
@@ -34,7 +34,12 @@ axios.interceptors.response.use(
     async (response) => { return response },
     async (error) => {
 
-        if (IS_OAUTH2) {
+        let isOAuth2WorkflowCall = true
+        if (error !== undefined && error !== null && error.config !== undefined && error.config !== null && error.config.isOAuth2WorkflowCall !== null && error.config.isOAuth2WorkflowCall !== null && error.config.isOAuth2WorkflowCall) {
+            isOAuth2WorkflowCall = error.config.isOAuth2WorkflowCall
+        }
+
+        if (IS_OAUTH2 && isOAuth2WorkflowCall) {
 
             // Get original request
             const originalRequest = error.config ? error.config : null
@@ -82,7 +87,10 @@ axios.interceptors.response.use(
                         // Set new accessToken in Bearer
                         if (accessToken != null && OAUTH2_TMP_ORIG_REQ !== null) {
                             OAUTH2_TMP_ORIG_REQ.headers['Authorization'] = 'Bearer ' + accessToken
+                            OAUTH2_TMP_ORIG_REQ.isOAuth2WorkflowCall = isOAuth2WorkflowCall
                         }
+
+                        OAUTH2_TMP_ORIG_REQ.isFromRefreshTokenCall = isFromRefreshTokenCall
 
                         // Re fire original request
                         return axios(OAUTH2_TMP_ORIG_REQ);
@@ -115,7 +123,10 @@ axios.interceptors.response.use(
                         // Set new accessToken in Bearer
                         if (accessToken != null) {
                             OAUTH2_TMP_ORIG_REQ.headers['Authorization'] = 'Bearer ' + accessToken
+                            OAUTH2_TMP_ORIG_REQ.isOAuth2WorkflowCall = isOAuth2WorkflowCall
                         }
+
+                        OAUTH2_TMP_ORIG_REQ.isFromCredentialsCall = isFromCredentialsCall
 
                         return axios(OAUTH2_TMP_ORIG_REQ);
 
@@ -126,25 +137,28 @@ axios.interceptors.response.use(
 
                 }
                 else {
-                    return Promise.reject(error)
+                    goLogout(error)
                 }
-
             }
             else {
 
-                if (OAUTH2_TMP_IS_CALLING_TOKENS_FROM_CREDENTIALS) {
+                if (OAUTH2_TMP_IS_CALLING_TOKENS_FROM_CREDENTIALS) { // todo replace by params ?!
 
                     OAUTH2_TMP_IS_CALLING_TOKENS_FROM_CREDENTIALS = false
 
-                    goLogout()
+                    goLogout(error)
+
 
                 } else {
 
                     return Promise.reject(error)
+
                 }
 
             }
 
+        } else {
+            return Promise.reject(error)
         }
 
     })
@@ -155,9 +169,9 @@ axios.interceptors.response.use(
  * @param callbackRequestSuccess Url to call if request is success
  * @param callbackRequestError Url to call if request fails
  * @param callbackRequestError Url to call if request fails
- * @param addTokenInHeaders Boolean to set if lib have to add access_token in Bearer (false by default)
+ * @param isOAuth2WorkflowCall Boolean to set if lib have to add access_token in Bearer (false by default)
  */
-function getRequest(url, callbackRequestSuccess, callbackRequestError, addTokenInHeaders = false) {
+function getRequest(url, callbackRequestSuccess, callbackRequestError, isOAuth2WorkflowCall = false) {
 
     if  (url !== undefined && url !== null) {
 
@@ -165,7 +179,7 @@ function getRequest(url, callbackRequestSuccess, callbackRequestError, addTokenI
         let headers = {};
 
         // If OAuth2 active and token is needed -> manage Bearer
-        if (IS_OAUTH2 && addTokenInHeaders) {
+        if (IS_OAUTH2 && isOAuth2WorkflowCall) {
 
             if  (OAUTH2_ACCESS_TOKEN !== undefined && OAUTH2_ACCESS_TOKEN !== null) {
 
@@ -176,7 +190,12 @@ function getRequest(url, callbackRequestSuccess, callbackRequestError, addTokenI
 
         }
 
-        axios.get(url, { headers: headers })
+        params = {
+            headers: headers,
+            isOAuth2WorkflowCall: isOAuth2WorkflowCall
+        }
+
+        axios.get(url, params)
             .then(response => {
 
                 // If OAuth2 active -> delete original request
@@ -211,9 +230,9 @@ function getRequest(url, callbackRequestSuccess, callbackRequestError, addTokenI
  * @param url Endpoint's URL
  * @param callbackRequestSuccess Url to call if request is success
  * @param callbackRequestError Url to call if request fails
- * @param addTokenInHeaders Boolean to set if lib have to add access_token in Bearer (false by default)
+ * @param isOAuth2WorkflowCall Boolean to set if lib have to add access_token in Bearer (false by default)
  */
-function postRequest(postData, url, callbackRequestSuccess, callbackRequestError, addTokenInHeaders = false, hasToStringify = true) {
+function postRequest(postData, url, callbackRequestSuccess, callbackRequestError, isOAuth2WorkflowCall = false, hasToStringify = true) {
 
     if  (url !== undefined && url !== null) {
 
@@ -221,7 +240,7 @@ function postRequest(postData, url, callbackRequestSuccess, callbackRequestError
         let headers = {};
 
         // If OAuth2 active and token is needed -> manage Bearer
-        if (IS_OAUTH2 && addTokenInHeaders) {
+        if (IS_OAUTH2 && isOAuth2WorkflowCall) {
 
             if  (OAUTH2_ACCESS_TOKEN !== undefined && OAUTH2_ACCESS_TOKEN !== null) {
 
@@ -234,9 +253,12 @@ function postRequest(postData, url, callbackRequestSuccess, callbackRequestError
 
         let finalPostData = hasToStringify ? qs.stringify(postData) : postData
 
-        axios.post(url, finalPostData, {
-            headers: headers
-        })
+        params = {
+            headers: headers,
+            isOAuth2WorkflowCall: isOAuth2WorkflowCall
+        }
+
+        axios.post(url, finalPostData, params)
             .then(function (response) {
 
                 // If OAuth2 active -> delete original request
@@ -259,6 +281,64 @@ function postRequest(postData, url, callbackRequestSuccess, callbackRequestError
     }
 
 }
+
+/**
+ * This method will make a PUT request
+ * @param putData PUT data to send
+ * @param url Endpoint's URL
+ * @param callbackRequestSuccess Url to call if request is success
+ * @param callbackRequestError Url to call if request fails
+ * @param isOAuth2WorkflowCall Boolean to set if lib have to add access_token in Bearer (false by default)
+ */
+function putRequest(putData, url, callbackRequestSuccess, callbackRequestError, isOAuth2WorkflowCall = false) {
+
+    if  (url !== undefined && url !== null) {
+
+        // Set headers
+        let headers = {};
+
+        // If OAuth2 active and token is needed -> manage Bearer
+        if (IS_OAUTH2 && isOAuth2WorkflowCall) {
+
+            if  (OAUTH2_ACCESS_TOKEN !== undefined && OAUTH2_ACCESS_TOKEN !== null) {
+
+                const OAuth2AccessToken = 'Bearer '.concat(OAUTH2_ACCESS_TOKEN);
+                headers = { Authorization: OAuth2AccessToken }
+
+            }
+
+        }
+
+        params = {
+            headers: headers,
+            isOAuth2WorkflowCall: isOAuth2WorkflowCall
+        }
+
+        axios.put(url, putData, params)
+            .then(function (response) {
+
+                // If OAuth2 active -> delete original request
+                if (IS_OAUTH2) {
+                    OAUTH2_TMP_ORIG_REQ = null;
+                }
+
+                callbackRequestSuccess(putData, response)
+
+            })
+            .catch(function (error) {
+
+                console.log(error);
+                // If callback is not null -> call it
+                if (callbackRequestError !== null) {
+                    callbackRequestError(putData, error);
+                }
+
+            });
+
+    }
+
+}
+
 /**
  *
  * ////////////////////// ServiceProvider logic methods END (public methods) //////////////////////
@@ -393,60 +473,6 @@ function deleteOAuth2UserData() {
 }
 
 /**
- * This method will make a PUT request
- * @param putData PUT data to send
- * @param url Endpoint's URL
- * @param callbackRequestSuccess Url to call if request is success
- * @param callbackRequestError Url to call if request fails
- * @param addTokenInHeaders Boolean to set if lib have to add access_token in Bearer (false by default)
- */
-function putRequest(putData, url, callbackRequestSuccess, callbackRequestError, addTokenInHeaders = false) {
-
-    if  (url !== undefined && url !== null) {
-
-        // Set headers
-        let headers = {};
-
-        // If OAuth2 active and token is needed -> manage Bearer
-        if (IS_OAUTH2 && addTokenInHeaders) {
-
-            if  (OAUTH2_ACCESS_TOKEN !== undefined && OAUTH2_ACCESS_TOKEN !== null) {
-
-                const OAuth2AccessToken = 'Bearer '.concat(OAUTH2_ACCESS_TOKEN);
-                headers = { Authorization: OAuth2AccessToken }
-
-            }
-
-        }
-
-        axios.put(url, putData, {
-            headers: headers
-        })
-            .then(function (response) {
-
-                // If OAuth2 active -> delete original request
-                if (IS_OAUTH2) {
-                    OAUTH2_TMP_ORIG_REQ = null;
-                }
-
-                callbackRequestSuccess(putData, response)
-
-            })
-            .catch(function (error) {
-
-                console.log(error);
-                // If callback is not null -> call it
-                if (callbackRequestError !== null) {
-                    callbackRequestError(putData, error);
-                }
-
-            });
-
-    }
-
-}
-
-/**
  *
  * ////////////////////// OAuth2 config methods START (public methods) //////////////////////
  *
@@ -463,7 +489,7 @@ function putRequest(putData, url, callbackRequestSuccess, callbackRequestError, 
  * Delete all OAuth2 user data then fire callback if defined
  *
  */
-function goLogout() {
+function goLogout(error) {
 
     OAUTH2_TMP_ORIG_REQ = null;
 
@@ -474,7 +500,9 @@ function goLogout() {
 
     // If logout callback is defined -> fire it
     if (OAUTH2_LOGOUT_CALLBACK !== null) {
-        OAUTH2_LOGOUT_CALLBACK();
+        OAUTH2_LOGOUT_CALLBACK()
+    } else {
+        return Promise.reject(error)
     }
 
 }
@@ -572,7 +600,7 @@ async function getAccessTokenByCredentials() {
             }
         })
         .catch(function (error) {
-            return null
+            return error
         });
 }
 
